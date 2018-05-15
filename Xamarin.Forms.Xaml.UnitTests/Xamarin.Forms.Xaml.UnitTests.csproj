@@ -108,6 +108,9 @@
     <Compile Include="Issues\Bz41296.xaml.cs">
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Issue2691.xaml.cs">
+      <DependentUpon>Issue2691.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LoaderTests.cs" />
     <Compile Include="PlatformSpecifics.xaml.cs">
       <DependentUpon>PlatformSpecifics.xaml</DependentUpon>
@@ -614,11 +617,13 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
-  
   <ItemGroup>
+    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
+      <Project>{96d89208-4eb9-4451-be73-8a9df3d9d7b7}</Project>
+      <Name>Xamarin.Forms.Build.Tasks</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
@@ -627,13 +632,13 @@
       <Project>{67F9D3A8-F71E-4428-913F-C37AE82CDB24}</Project>
       <Name>Xamarin.Forms.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.csproj">
+      <Project>{96786e49-f8e6-4492-8b04-ae03232acc28}</Project>
+      <Name>Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
       <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
       <Name>Xamarin.Forms.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
-      <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
-      <Name>Xamarin.Forms.Build.Tasks</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
       <Project>{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}</Project>
@@ -1156,15 +1161,15 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="css\" />
-  </ItemGroup>
   <ItemGroup />
-
+  <ItemGroup>
+    <EmbeddedResource Include="Issues\Issue2691.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="VisualStateManagerTests.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

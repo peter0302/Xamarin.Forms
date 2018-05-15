@@ -58,21 +58,25 @@
 	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
 
 	<PropertyGroup>
-		<CoreCompileDependsOn>
+    <CoreCompileDependsOn>
 			XamlG;
 			$(CoreCompileDependsOn);
 		</CoreCompileDependsOn>
 	</PropertyGroup>
-
-	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+  
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames; AfterResolveReferences" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+  
 		<PropertyGroup>
 			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
+			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
 		</PropertyGroup>
-		<XamlGTask
+
+		<XamlGTask      			
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
 			AssemblyName = "$(AssemblyName)"
-			OutputPath = "$(IntermediateOutputPath)">
+			OutputPath = "$(IntermediateOutputPath)"
+			References = "$(ReferencedAssemblies)">
 			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
 			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
 		</XamlGTask>
@@ -89,7 +93,7 @@
 	<Target Name="XamlC" AfterTargets="AfterCompile" Inputs="$(IntermediateOutputPath)$(TargetFileName)" Outputs="$(IntermediateOutputPath)XamlC.stamp">
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
-			ReferencePath = "@(ReferencePath)"
+			ReferencePath = "@(ReferencePath)"      
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"

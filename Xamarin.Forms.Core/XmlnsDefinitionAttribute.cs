@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Internals
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	[DebuggerDisplay("{XmlNamespace}, {ClrNamespace}, {AssemblyName}")]
-	sealed class XmlnsDefinitionAttribute : Attribute
+	public sealed class XmlnsDefinitionAttribute : Attribute
 	{
 		public string XmlNamespace { get; }
 		public string ClrNamespace { get; }

@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Build.Tasks
 			string language,
 			string assemblyName,
 			string outputFile,
+			string references,
 			TaskLoggingHelper logger)
 			: this(
 				taskItem.ItemSpec,
@@ -30,6 +31,7 @@ namespace Xamarin.Forms.Build.Tasks
 				taskItem.GetMetadata("TargetPath"),
 				assemblyName,
 				outputFile,
+				references,
 				logger)
 		{
 		}
@@ -46,6 +48,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public TaskLoggingHelper Logger { get; }
 		public string RootClrNamespace { get; private set; }
 		public string RootType { get; private set; }
+		public string References { get; }
 		bool GenerateDefaultCtor { get; set; }
 		bool AddXamlCompilationAttribute { get; set; }
 		bool HideFromIntellisense { get; set; }
@@ -60,6 +63,7 @@ namespace Xamarin.Forms.Build.Tasks
 			string targetPath,
 			string assemblyName,
 			string outputFile,
+			string references,
 			TaskLoggingHelper logger = null)
 		{
 			XamlFile = xamlFile;
@@ -68,6 +72,7 @@ namespace Xamarin.Forms.Build.Tasks
 			TargetPath = targetPath;
 			AssemblyName = assemblyName;
 			OutputFile = outputFile;
+			References = references;
 			Logger = logger;
 		}
 
@@ -79,7 +84,7 @@ namespace Xamarin.Forms.Build.Tasks
 			Logger?.LogMessage(MessageImportance.Low, " ResourceID: {0}", ResourceId);
 			Logger?.LogMessage(MessageImportance.Low, " TargetPath: {0}", TargetPath);
 			Logger?.LogMessage(MessageImportance.Low, " AssemblyName: {0}", AssemblyName);
-			Logger?.LogMessage(MessageImportance.Low, " OutputFile {0}", OutputFile);
+			Logger?.LogMessage(MessageImportance.Low, " OutputFile {0}", OutputFile);			
 
 			using (StreamReader reader = File.OpenText(XamlFile))
 				if (!ParseXaml(reader))
