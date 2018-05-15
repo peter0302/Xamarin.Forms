@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Build.Tasks
 				logger)
 		{
 		}
-		
+
 		static int generatedTypesCount;
 		bool _nsAssembliesLoaded = false;
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
@@ -206,8 +206,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//Create a default ctor calling InitializeComponent
 			if (GenerateDefaultCtor) {
-				var ctor = new CodeConstructor
-				{
+				var ctor = new CodeConstructor {
 					Attributes = MemberAttributes.Public,
 					CustomAttributes = { GeneratedCodeAttrDecl },
 					Statements = {
@@ -274,8 +273,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				var access = MemberAttributes.Private;
 				if (fieldModifier != null) {
-					switch (fieldModifier.ToLowerInvariant())
-					{
+					switch (fieldModifier.ToLowerInvariant()) {
 						default:
 						case "private":
 							access = MemberAttributes.Private;
@@ -324,11 +322,10 @@ namespace Xamarin.Forms.Build.Tasks
 			CodeTypeReference returnType = null;
 			var ns = GetClrNamespace(xmlType.NamespaceUri);
 			if (ns == null) {
-				// it's an external, non-built-in namespace URL
-
-				// Make sure we have the list of referenced assemblies
-				// and that they're in the app domain so that we can 
-				// get the Type object later.
+				// It's an external, non-built-in namespace URL.
+				// Make sure we have any referenced assembly that
+				// has the XmlnsDefinition attribute loaded in the 
+				// app domain so that we can get the Type.
 				if (!_nsAssembliesLoaded)
 					LoadNSDefinitionAssemblies();				
 				Type externalType = XamlParser.GetElementType(xmlType, null, null, out ex);
@@ -373,8 +370,7 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new ArgumentNullException(nameof(localName));
 			if (namespaceURIs == null)
 				throw new ArgumentNullException(nameof(namespaceURIs));
-			foreach (var namespaceURI in namespaceURIs)
-			{
+			foreach (var namespaceURI in namespaceURIs) {
 				var attr = node.Attributes[localName, namespaceURI];
 				if (attr == null)
 					continue;

@@ -23,12 +23,12 @@ namespace Xamarin.Forms.Build.Tasks
 		public string OutputPath { get; set; }
 		public string References { get; set; }		
 
-		public override bool Execute() 
+		public override bool Execute()
 		{
-			bool success = true;  
+			bool success = true;
 			Log.LogMessage(MessageImportance.Normal, "Generating code behind for XAML files");
 
-			if (XamlFiles == null) {  
+			if (XamlFiles == null) {
 				Log.LogMessage("Skipping XamlG");
 				return true;
 			}
