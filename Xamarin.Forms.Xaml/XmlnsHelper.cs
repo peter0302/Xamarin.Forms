@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -27,6 +30,19 @@ namespace Xamarin.Forms.Xaml
 				return;
 			}
 			ParseClrNamespace(xmlns, out typeName, out ns, out asm, out targetPlatform);
+		}
+
+		public static List<XmlnsDefinitionAttribute> GetXmlsAttrsForAssemblies(
+			IEnumerable<Assembly> assemblies)
+		{
+			List<XmlnsDefinitionAttribute> xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+			foreach (var assembly in assemblies)
+				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+				{
+					xmlnsDefinitions.Add(attribute);
+					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+				}
+			return xmlnsDefinitions;
 		}
 
 		static void ParseClrNamespace(string xmlns, out string typeName, out string ns, out string asm, out string targetPlatform)

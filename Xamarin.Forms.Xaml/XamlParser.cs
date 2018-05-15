@@ -311,19 +311,12 @@ namespace Xamarin.Forms.Xaml
 
 		static void GatherXmlnsDefinitionAttributes()
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
 			var assemblies = new [] {
 				typeof(View).GetTypeInfo().Assembly,
 				typeof(XamlLoader).GetTypeInfo().Assembly,
 			};
 
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
-			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute))) {
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
-				}
+			s_xmlnsDefinitions = XmlnsHelper.GetXmlsAttrsForAssemblies(assemblies);				
 		}
 
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,

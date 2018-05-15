@@ -14,19 +14,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static void GatherXmlnsDefinitionAttributes()
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
 			var assemblies = new [] {
 				typeof(View).Assembly,
 				typeof(XamlLoader).Assembly,
 			};
 
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
-			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
-				}
+			s_xmlnsDefinitions = XmlnsHelper.GetXmlsAttrsForAssemblies(assemblies);
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
