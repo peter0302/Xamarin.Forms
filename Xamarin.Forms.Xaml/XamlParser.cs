@@ -309,12 +309,15 @@ namespace Xamarin.Forms.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		static void GatherXmlnsDefinitionAttributes()
+		internal static void GatherXmlnsDefinitionAttributes(IEnumerable<Assembly> assemblies = null)
 		{
-			var assemblies = new [] {
-				typeof(View).GetTypeInfo().Assembly,
-				typeof(XamlLoader).GetTypeInfo().Assembly,
-			};
+			if (assemblies == null)
+			{
+				assemblies = new[] {
+					typeof(View).GetTypeInfo().Assembly,
+					typeof(XamlLoader).GetTypeInfo().Assembly,
+				};
+			}
 
 			s_xmlnsDefinitions = XmlnsHelper.GetXmlsAttrsForAssemblies(assemblies);				
 		}
@@ -342,9 +345,13 @@ namespace Xamarin.Forms.Xaml
 			if (lookupAssemblies.Count == 0) {
 				string ns, asmstring, _;
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out ns, out asmstring, out _);
-				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
-					AssemblyName = asmstring ?? currentAssembly.FullName
-				});
+				if (!string.IsNullOrEmpty(asmstring) || currentAssembly != null)
+				{
+					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
+					{
+						AssemblyName = asmstring ?? currentAssembly.FullName
+					});
+				}
 			}
 
 			lookupNames.Add(elementName);

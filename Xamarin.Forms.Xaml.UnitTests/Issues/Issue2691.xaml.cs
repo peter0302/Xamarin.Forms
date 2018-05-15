@@ -28,12 +28,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</StackLayout>
 					</ContentPage.Content>
 				</ContentPage>";
+		const string c_References = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.dll";		
 
 		[TestCase(false)]
 		[TestCase(true)] 
-		public void CreateFromXamlCompiler()
+		public void CreateFromXamlCompiler(bool useCompiledXaml)
 		{
-			TestLabel testLabel = null;	//
+			TestLabel testLabel = new TestLabel();	//
 
 			string xamlInputFile = CreateXamlInputFile();
 			var item = new TaskItem(xamlInputFile);
@@ -45,9 +46,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Language = "C#",
 				XamlFiles = new[] { item }, 
 				OutputPath = Path.GetDirectoryName(xamlInputFile),
+				References = c_References
 			};
 
-			generator.Execute();		 			
+			Assert.IsTrue(generator.Execute()); 
 		}
 
 		string CreateXamlInputFile()
@@ -55,7 +57,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			string fileName = Path.GetTempFileName();
 			File.WriteAllText(fileName, c_xaml);
 			return fileName;
-		}
+		}		
 	}
 
 	public partial class Issue2691 : ContentPage
