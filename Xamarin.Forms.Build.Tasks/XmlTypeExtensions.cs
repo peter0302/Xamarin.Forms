@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (type == null)
-				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}", elementName, namespaceURI), xmlInfo);
+				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}. Ensure third party control libraries are referenced in the code of your project and not just in XAML.", elementName, namespaceURI), xmlInfo);
 
 			return module.ImportReference(type);
 		}	

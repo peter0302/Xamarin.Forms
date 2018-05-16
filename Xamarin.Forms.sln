@@ -174,7 +174,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.Design",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design", "Xamarin.Forms.Xaml.Design\Xamarin.Forms.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute", "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.csproj", "{96786E49-F8E6-4492-8B04-AE03232ACC28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute", "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.csproj", "{96786E49-F8E6-4492-8B04-AE03232ACC28}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
