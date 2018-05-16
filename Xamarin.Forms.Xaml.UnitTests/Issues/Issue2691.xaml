@@ -5,11 +5,10 @@
              x:Class="Xamarin.Forms.Xaml.UnitTests.Issue2691">
     <ContentPage.Content>
         <StackLayout>
-			<!--
-            <test:TestLabel x:Name="_testLabel"
+			<test:TestLabel x:Name="_testLabel"
 							Text="Welcome to Xamarin.Forms!"
 							VerticalOptions="CenterAndExpand" 
-							HorizontalOptions="CenterAndExpand" />-->
-        </StackLayout>
+							HorizontalOptions="CenterAndExpand" />
+		</StackLayout>
     </ContentPage.Content>
 </ContentPage>

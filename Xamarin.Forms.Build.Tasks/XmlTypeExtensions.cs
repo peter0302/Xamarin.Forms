@@ -12,14 +12,30 @@ namespace Xamarin.Forms.Build.Tasks
 	{
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		static void GatherXmlnsDefinitionAttributes()
+		static void GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
-			var assemblies = new [] {
-				typeof(View).Assembly,
-				typeof(XamlLoader).Assembly,
-			};
+			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
-			s_xmlnsDefinitions = XmlnsHelper.GetXmlsAttrsForAssemblies(assemblies);
+			var nsrefAttr = module.ImportReference(
+				("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "XmlnsDefinitionAttribute"));
+
+			foreach (var asmRef in module.AssemblyReferences) {
+				var asmDef = module.AssemblyResolver.Resolve(asmRef);
+				foreach (var ca in asmDef.CustomAttributes) {
+					if (TypeRefComparer.Default.Equals(ca.AttributeType, nsrefAttr)) {
+						var attr = new XmlnsDefinitionAttribute(
+							ca.ConstructorArguments[0].Value as string,
+							ca.ConstructorArguments[1].Value as string);
+
+						string assemblyName = null;
+						if (ca.Properties.Count > 0)
+							assemblyName = ca.Properties[0].Argument.Value as string;
+						attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
+
+						s_xmlnsDefinitions.Add(attr);
+					}
+				}
+			}			
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
@@ -45,10 +61,16 @@ namespace Xamarin.Forms.Build.Tasks
 			return new XmlType(namespaceURI, typename, null).GetTypeReference(module, xmlInfo);
 		}
 
+		static object _lock = new object();
+
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+			lock (_lock) {
+				// lock is really only needed for unit tests to avoid
+				// concurrency issues with this static list.
+				if (s_xmlnsDefinitions == null)
+					GatherXmlnsDefinitionAttributes(module);
+			}
 
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
@@ -123,6 +145,6 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}", elementName, namespaceURI), xmlInfo);
 
 			return module.ImportReference(type);
-		}
+		}	
 	}
 }

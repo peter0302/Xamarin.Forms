@@ -27,12 +27,31 @@ namespace Xamarin.Forms.Xaml.UnitTests
 											HorizontalOptions=""CenterAndExpand"" />
 						</StackLayout>
 					</ContentPage.Content>
-				</ContentPage>";
-		const string c_References = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.dll";		
+				</ContentPage>";		
+
+		[SetUp]
+		public void SetUp()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
 		[TestCase(false)]
-		[TestCase(true)] 
-		public void CreateFromXamlCompiler(bool useCompiledXaml)
+		[TestCase(true)]
+		public void TestXamlParser(bool useCompiledXaml)
+		{
+			Issue2691 issue2691 = new Issue2691(useCompiledXaml);
+			var label = issue2691.FindByName("_testLabel") as TestLabel;
+			Assert.IsNotNull(label);
+		}
+
+		[TestCase]
+		public void TestXamlCompiler()
+		{
+			MockCompiler.Compile(typeof(Issue2691));
+		}
+
+		[TestCase] 
+		public void TestXamlGenerator()
 		{
 			TestLabel testLabel = new TestLabel();	//
 
@@ -46,7 +65,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Language = "C#",
 				XamlFiles = new[] { item }, 
 				OutputPath = Path.GetDirectoryName(xamlInputFile),
-				References = c_References
+				References = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.dll"
 			};
 
 			Assert.IsTrue(generator.Execute()); 
@@ -59,7 +78,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			return fileName;
 		}		
 	}
-
+	
 	public partial class Issue2691 : ContentPage
 	{
 		public Issue2691()
