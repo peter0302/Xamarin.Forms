@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue2691Tests
-	{  
+	{
 		const string c_xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -52,20 +52,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		[TestCase] 
 		public void TestXamlGenerator()
-		{
-			TestLabel testLabel = new TestLabel();	//
-
+		{			
 			string xamlInputFile = CreateXamlInputFile();
 			var item = new TaskItem(xamlInputFile);
 			item.SetMetadata("TargetPath", xamlInputFile);
-			var generator = new XamlGTask()         
+			var generator = new XamlGTask()
 			{
 				BuildEngine = new DummyBuildEngine(),
 				AssemblyName = "test",
 				Language = "C#",
-				XamlFiles = new[] { item }, 
+				XamlFiles = new[] { item },
 				OutputPath = Path.GetDirectoryName(xamlInputFile),
-				References = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.dll"
+				References = @"C:\VSProjects\Xamarin.Forms\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\bin\Debug\netstandard2.0\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.dll"
 			};
 
 			Assert.IsTrue(generator.Execute()); 

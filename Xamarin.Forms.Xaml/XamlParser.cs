@@ -309,19 +309,19 @@ namespace Xamarin.Forms.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		internal static void GatherXmlnsDefinitionAttributes(IEnumerable<Assembly> assemblies = null)
+		internal static void GatherXmlnsDefinitionAttributes()
 		{
-			if (assemblies == null)
-			{
+			Assembly[] assemblies = null;
 #if !NETSTANDARD2_0
-				assemblies = new[] {
-					typeof(View).GetTypeInfo().Assembly,
-					typeof(XamlLoader).GetTypeInfo().Assembly,
-				};
+			assemblies = new[] {
+				typeof(View).GetTypeInfo().Assembly,
+				typeof(XamlLoader).GetTypeInfo().Assembly,
+			};
+			Debug.WriteLine($"XamlParser.cs: NetStandard 1.x in use; reverting to standard assembly namespaces.");
 #else
-				assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			Debug.WriteLine($"XamlParser.cs: NetStandard 2.0 in use; searching for XmlnsDefinitionAttribute in asemblies {string.Join(", ", assemblies.Select(asm=>asm.FullName))}");
 #endif
-			}
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 			foreach (var assembly in assemblies)
@@ -334,6 +334,9 @@ namespace Xamarin.Forms.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
+			bool hasRetriedNsSearch = false;
+
+		retry:
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAttributes();
 
@@ -354,13 +357,10 @@ namespace Xamarin.Forms.Xaml
 			if (lookupAssemblies.Count == 0) {
 				string ns, asmstring, _;
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out ns, out asmstring, out _);
-				if (!string.IsNullOrEmpty(asmstring) || currentAssembly != null)
+				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
 				{
-					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
-					{
-						AssemblyName = asmstring ?? currentAssembly.FullName
-					});
-				}
+					AssemblyName = asmstring ?? currentAssembly.FullName
+				});
 			}
 
 			lookupNames.Add(elementName);
@@ -407,8 +407,20 @@ namespace Xamarin.Forms.Xaml
 				type = type.MakeGenericType(args);
 			}
 
-			if (type == null)
+			if (type == null) {
+#if NETSTANDARD2_0
+				// This covers the scenario where the AppDomain's loaded
+				// assemblies might have changed since this method was first
+				// called. This occurred during unit test runs and could
+				// conceivably occur in the field. 
+				if ( !hasRetriedNsSearch) {
+					hasRetriedNsSearch = true;
+					s_xmlnsDefinitions = null;
+					goto retry;
+				}
+#endif
 				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}", xmlInfo);
+			}
 
 			return type;
 		}

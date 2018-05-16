@@ -11,6 +11,7 @@ using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
+using Mono.Cecil;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -39,8 +40,10 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 		}
 
-		static int generatedTypesCount;
+		static int generatedTypesCount;		
 		bool _nsAssembliesLoaded = false;
+		List<XmlnsDefinitionAttribute> _xmlnsDefinitions;
+		Dictionary<string, ModuleDefinition> _xmlnsModules;
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
 
 		public string XamlFile { get; }
@@ -314,24 +317,72 @@ namespace Xamarin.Forms.Build.Tasks
 			return compileValue.Equals("true", StringComparison.InvariantCultureIgnoreCase);
 		}
 
+		public CodeTypeReference GetCustomNamespaceUrlType(XmlType xmlType)
+		{
+			if (_xmlnsDefinitions == null)
+				GatherXmlnsDefinitionAttributes();
+
+			var namespaceURI = xmlType.NamespaceUri;
+			var elementName = xmlType.Name;
+			var typeArguments = xmlType.TypeArguments;		
+
+			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
+			var lookupNames = new List<string>();
+
+			foreach (var xmlnsDef in _xmlnsDefinitions)
+			{
+				if (xmlnsDef.XmlNamespace != namespaceURI)
+					continue;
+				lookupAssemblies.Add(xmlnsDef);
+			}
+
+			if (lookupAssemblies.Count == 0)
+				return null;
+
+			lookupNames.Add(elementName);
+			lookupNames.Add(elementName + "Extension");
+
+			for (var i = 0; i < lookupNames.Count; i++)
+			{
+				var name = lookupNames[i];
+				if (name.Contains(":"))
+					name = name.Substring(name.LastIndexOf(':') + 1);
+				if (typeArguments != null)
+					name += "`" + typeArguments.Count; //this will return an open generic Type
+				lookupNames[i] = name;
+			}
+
+			TypeReference typeReference = null;
+			foreach (var asm in lookupAssemblies)
+			{
+				ModuleDefinition module = null;
+				if (!_xmlnsModules.TryGetValue(asm.AssemblyName, out module))
+					continue;
+				foreach (var name in lookupNames) {
+					string fullName = $"{asm.ClrNamespace}.{name}";
+					typeReference = module.Types.Where(t => t.FullName == fullName).FirstOrDefault();
+					if (typeReference != null)
+						break;
+				}
+				if (typeReference != null)
+					break;
+			}
+
+			if (typeReference == null)
+				throw new Exception($"Type {elementName} not found in xmlns {namespaceURI}");
+
+			return new CodeTypeReference(typeReference.FullName);
+		}
+
 		public CodeTypeReference GetType(
 			XmlType xmlType,
 			Func<string, string> getNamespaceOfPrefix = null)
 		{
-			XamlParseException ex;			
 			CodeTypeReference returnType = null;
 			var ns = GetClrNamespace(xmlType.NamespaceUri);
 			if (ns == null) {
 				// It's an external, non-built-in namespace URL.
-				// Make sure we have any referenced assembly that
-				// has the XmlnsDefinition attribute loaded in the 
-				// app domain so that we can get the Type.
-				if (!_nsAssembliesLoaded)
-					LoadNSDefinitionAssemblies();				
-				Type externalType = XamlParser.GetElementType(xmlType, null, null, out ex);
-				if ( externalType == null )
-					throw new Exception($"Can't load types from xmlns {xmlType.NamespaceUri}");
-				returnType = new CodeTypeReference(externalType);
+				returnType = GetCustomNamespaceUrlType(xmlType);				
 			}
 			else {				
 				var type = xmlType.Name;				
@@ -377,10 +428,13 @@ namespace Xamarin.Forms.Build.Tasks
 				return attr.Value;
 			}
 			return null;
-		}
+		}		
 
-		void LoadNSDefinitionAssemblies()
+		void GatherXmlnsDefinitionAttributes()
 		{
+			_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+			_xmlnsModules = new Dictionary<string, ModuleDefinition>();
+
 			if (string.IsNullOrEmpty(this.References)) {
 				_nsAssembliesLoaded = true;
 				return;
@@ -388,29 +442,22 @@ namespace Xamarin.Forms.Build.Tasks
 
 			string[] paths = this.References.Split(';');
 
-			HashSet<string> loadedAssemblies = new HashSet<string>(
-				AppDomain.CurrentDomain.GetAssemblies()
-					.Where(asm=>!asm.IsDynamic)
-					.Select(asm => Path.GetFileName(asm.Location)));
-
 			foreach ( var path in paths ) {
 				string asmName = Path.GetFileName(path);
 				if ( AssemblyIsSystem(asmName) )
-					// skip the myriad "System." assemblies or anything
-					// already loaded.
-					continue;
+					// Skip the myriad "System." assemblies and others
+					continue;				
 
-				if (!loadedAssemblies.Contains(asmName)) {
-					Assembly asm = Assembly.LoadFrom(path);
-					// Only load the Assembly into the AppDomain if it has the
-					// XmlnsDefinitionAttribute
-					if ( asm.GetCustomAttribute<XmlnsDefinitionAttribute>() != null)
-						AppDomain.CurrentDomain.Load(asm.FullName); 					
-				}
-				continue;
+				using (var amDef = AssemblyDefinition.ReadAssembly(path)) {
+					foreach ( var ca in amDef.CustomAttributes ) {
+						if ( ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+							_xmlnsDefinitions.Add(ca.GetXmlnsDefinition(amDef));
+							_xmlnsModules[amDef.FullName] = amDef.MainModule;
+						}
+					}					
+				}								
 			}
-
-			XamlParser.GatherXmlnsDefinitionAttributes(AppDomain.CurrentDomain.GetAssemblies());
+						
 			_nsAssembliesLoaded = true;
 		}
 

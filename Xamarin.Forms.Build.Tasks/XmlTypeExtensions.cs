@@ -10,32 +10,39 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
-		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions = 
+			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
+		static object _nsLock = new object();
 
-		static void GatherXmlnsDefinitionAttributes(ModuleDefinition module)
+		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
 		{
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+			var attr = new XmlnsDefinitionAttribute(
+							ca.ConstructorArguments[0].Value as string,
+							ca.ConstructorArguments[1].Value as string);
 
-			var nsrefAttr = module.ImportReference(
-				("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "XmlnsDefinitionAttribute"));
+			string assemblyName = null;
+			if (ca.Properties.Count > 0)
+				assemblyName = ca.Properties[0].Argument.Value as string;
+			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
+			return attr;
+		}
+
+		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
+		{
+			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			foreach (var asmRef in module.AssemblyReferences) {
 				var asmDef = module.AssemblyResolver.Resolve(asmRef);
 				foreach (var ca in asmDef.CustomAttributes) {
-					if (TypeRefComparer.Default.Equals(ca.AttributeType, nsrefAttr)) {
-						var attr = new XmlnsDefinitionAttribute(
-							ca.ConstructorArguments[0].Value as string,
-							ca.ConstructorArguments[1].Value as string);
-
-						string assemblyName = null;
-						if (ca.Properties.Count > 0)
-							assemblyName = ca.Properties[0].Argument.Value as string;
-						attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
-
-						s_xmlnsDefinitions.Add(attr);
+					if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+						var attr = GetXmlnsDefinition(ca, asmDef);
+						xmlnsDefinitions.Add(attr);
 					}
 				}
-			}			
+			}
+
+			s_xmlnsDefinitions[module] = xmlnsDefinitions;
+			return xmlnsDefinitions;
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
@@ -59,17 +66,14 @@ namespace Xamarin.Forms.Build.Tasks
 		public static TypeReference GetTypeReference(string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
 			return new XmlType(namespaceURI, typename, null).GetTypeReference(module, xmlInfo);
-		}
-
-		static object _lock = new object();
+		}		
 
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			lock (_lock) {
-				// lock is really only needed for unit tests to avoid
-				// concurrency issues with this static list.
-				if (s_xmlnsDefinitions == null)
-					GatherXmlnsDefinitionAttributes(module);
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = null;
+			lock (_nsLock) {					
+				if (!s_xmlnsDefinitions.TryGetValue(module, out xmlnsDefinitions))
+					xmlnsDefinitions = GatherXmlnsDefinitionAttributes(module);
 			}
 
 			var namespaceURI = xmlType.NamespaceUri;
@@ -80,7 +84,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var lookupNames = new List<string>();
 
-			foreach (var xmlnsDef in s_xmlnsDefinitions) {
+			foreach (var xmlnsDef in xmlnsDefinitions) {
 				if (xmlnsDef.XmlNamespace != namespaceURI)
 					continue;
 				lookupAssemblies.Add(xmlnsDef);
