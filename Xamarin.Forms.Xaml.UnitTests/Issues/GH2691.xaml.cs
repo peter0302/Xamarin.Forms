@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[TestFixture]
-		public class Issue2691Tests
+		public class Tests
 		{
 			const string c_xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
