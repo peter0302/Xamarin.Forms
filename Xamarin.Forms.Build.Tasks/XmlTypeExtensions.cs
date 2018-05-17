@@ -3,30 +3,32 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
-		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions = 
+			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
+		static object _nsLock = new object();
 
-		static void GatherXmlnsDefinitionAttributes()
+		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
-			var assemblies = new [] {
-				typeof(View).Assembly,
-				typeof(XamlLoader).Assembly,
-			};
+			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
-			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+			foreach (var asmRef in module.AssemblyReferences) {
+				var asmDef = module.AssemblyResolver.Resolve(asmRef);
+				foreach (var ca in asmDef.CustomAttributes) {
+					if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+						var attr = GetXmlnsDefinition(ca, asmDef);
+						xmlnsDefinitions.Add(attr);
+					}
 				}
+			}
+
+			s_xmlnsDefinitions[module] = xmlnsDefinitions;
+			return xmlnsDefinitions;
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
@@ -54,8 +56,11 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = null;
+			lock (_nsLock) {					
+				if (!s_xmlnsDefinitions.TryGetValue(module, out xmlnsDefinitions))
+					xmlnsDefinitions = GatherXmlnsDefinitionAttributes(module);
+			}
 
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
@@ -65,7 +70,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var lookupNames = new List<string>();
 
-			foreach (var xmlnsDef in s_xmlnsDefinitions) {
+			foreach (var xmlnsDef in xmlnsDefinitions) {
 				if (xmlnsDef.XmlNamespace != namespaceURI)
 					continue;
 				lookupAssemblies.Add(xmlnsDef);
@@ -127,9 +132,22 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (type == null)
-				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}", elementName, namespaceURI), xmlInfo);
+				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}. Ensure third party control libraries are referenced in the code of your project and not just in XAML.", elementName, namespaceURI), xmlInfo);
 
 			return module.ImportReference(type);
+		}
+
+		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
+		{
+			var attr = new XmlnsDefinitionAttribute(
+							ca.ConstructorArguments[0].Value as string,
+							ca.ConstructorArguments[1].Value as string);
+
+			string assemblyName = null;
+			if (ca.Properties.Count > 0)
+				assemblyName = ca.Properties[0].Argument.Value as string;
+			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
+			return attr;
 		}
 	}
 }

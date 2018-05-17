@@ -311,11 +311,15 @@ namespace Xamarin.Forms.Xaml
 
 		static void GatherXmlnsDefinitionAttributes()
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
-			var assemblies = new [] {
+			Assembly[] assemblies = null;
+#if !NETSTANDARD2_0
+			assemblies = new[] {
 				typeof(View).GetTypeInfo().Assembly,
 				typeof(XamlLoader).GetTypeInfo().Assembly,
 			};
+#else
+			assemblies = AppDomain.CurrentDomain.GetAssemblies();			
+#endif
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
@@ -329,6 +333,9 @@ namespace Xamarin.Forms.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
+			bool hasRetriedNsSearch = false;
+
+		retry:
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAttributes();
 
@@ -398,8 +405,20 @@ namespace Xamarin.Forms.Xaml
 				type = type.MakeGenericType(args);
 			}
 
-			if (type == null)
-				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}", xmlInfo);
+			if (type == null) {
+#if NETSTANDARD2_0
+				// This covers the scenario where the AppDomain's loaded
+				// assemblies might have changed since this method was first
+				// called. This occurred during unit test runs and could
+				// conceivably occur in the field. 
+				if ( !hasRetriedNsSearch) {
+					hasRetriedNsSearch = true;
+					s_xmlnsDefinitions = null;
+					goto retry;
+				}
+#endif
+				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}. Ensure third party control libraries are referenced in the code of your project and not just in XAML.  Third party control authors must also apply the \"Preserve\" attribute on their assemblies or any control classes.", xmlInfo);
+			}
 
 			return type;
 		}

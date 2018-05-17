@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public string Language { get; set; }
 		public string AssemblyName { get; set; }
 		public string OutputPath { get; set; }
+		public string References { get; set; }		
 
 		public override bool Execute()
 		{
@@ -44,7 +45,7 @@ namespace Xamarin.Forms.Build.Tasks
 				else if (Path.DirectorySeparatorChar == '\\' && outputFile.Contains(@"/"))
 					outputFile = outputFile.Replace('/', '\\');
 	
-				var generator = new XamlGenerator(xamlFile, Language, AssemblyName, outputFile, Log);
+				var generator = new XamlGenerator(xamlFile, Language, AssemblyName, outputFile, References, Log);
 				try {
 					if (generator.Execute())
 						_generatedCodeFiles.Add(new TaskItem(Microsoft.Build.Evaluation.ProjectCollection.Escape(outputFile)));
