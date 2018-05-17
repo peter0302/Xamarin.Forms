@@ -316,7 +316,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (indexOfCompile != -1)
 				compileValue = parts[indexOfCompile + 1].Trim('"', '\'');
 			return compileValue.Equals("true", StringComparison.InvariantCultureIgnoreCase);
-		}		
+		}
 
 		CodeTypeReference GetType(XmlType xmlType,
 			Func<string, string> getNamespaceOfPrefix = null)

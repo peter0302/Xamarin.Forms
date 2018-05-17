@@ -65,12 +65,11 @@
 	</PropertyGroup>
   
 	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames; AfterResolveReferences" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
-  
 		<PropertyGroup>
 			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
 			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
 		</PropertyGroup>
-		<XamlGTask      			
+		<XamlGTask
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
 			AssemblyName = "$(AssemblyName)"

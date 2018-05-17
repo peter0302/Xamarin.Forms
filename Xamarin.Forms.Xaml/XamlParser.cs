@@ -322,6 +322,7 @@ namespace Xamarin.Forms.Xaml
 #endif
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+
 			foreach (var assembly in assemblies)
 				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute))) {
 					s_xmlnsDefinitions.Add(attribute);
