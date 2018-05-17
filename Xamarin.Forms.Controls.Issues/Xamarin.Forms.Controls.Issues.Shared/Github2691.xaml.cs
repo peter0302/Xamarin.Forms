@@ -1,15 +1,12 @@
 ﻿using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.Issues
 {	
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2691, "Make XmlnsDefinitionAttribute Public", PlatformAffected.All)]
+	[Preserve(AllMembers = true)]
 	public partial class Github2691 : ContentPage
 	{
 		public Github2691()
