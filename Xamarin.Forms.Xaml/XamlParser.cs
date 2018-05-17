@@ -419,7 +419,7 @@ namespace Xamarin.Forms.Xaml
 					goto retry;
 				}
 #endif
-				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}", xmlInfo);
+				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}. Ensure third party control libraries are referenced in the code of your project and not just in XAML.  Third party control authors must also apply the \"Preserve\" attribute on their assemblies or any control classes.", xmlInfo);
 			}
 
 			return type;

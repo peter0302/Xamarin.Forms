@@ -108,8 +108,8 @@
     <Compile Include="Issues\Bz41296.xaml.cs">
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Issue2691.xaml.cs">
-      <DependentUpon>Issue2691.xaml</DependentUpon>
+    <Compile Include="Issues\GH2691.xaml.cs">
+      <DependentUpon>GH2691.xaml</DependentUpon>
     </Compile>
     <Compile Include="LoaderTests.cs" />
     <Compile Include="PlatformSpecifics.xaml.cs">
@@ -1163,7 +1163,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="Issues\Issue2691.xaml">
+    <EmbeddedResource Include="Issues\GH2691.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

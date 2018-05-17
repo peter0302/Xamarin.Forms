@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:test="http://xamarin.com/schemas/2014/forms/testing"
-             x:Class="Xamarin.Forms.Xaml.UnitTests.Issue2691">
+             x:Class="Xamarin.Forms.Xaml.UnitTests.Gh2691">
     <ContentPage.Content>
         <StackLayout>
 			<test:TestLabel x:Name="_testLabel"
