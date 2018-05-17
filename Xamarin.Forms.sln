@@ -176,13 +176,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute", "Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.csproj", "{96786E49-F8E6-4492-8B04-AE03232ACC28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Controls.Issues.CustomNamespaceUris", "Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.CustomNamespaceUris\Xamarin.Forms.Controls.Issues.CustomNamespaceUris.csproj", "{EC0A5F99-8FB8-4A8B-96FD-57912EC9B035}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Controls.Issues.CustomNamespaceUris", "Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.CustomNamespaceUris\Xamarin.Forms.Controls.Issues.CustomNamespaceUris.csproj", "{EC0A5F99-8FB8-4A8B-96FD-57912EC9B035}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
-		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 4
