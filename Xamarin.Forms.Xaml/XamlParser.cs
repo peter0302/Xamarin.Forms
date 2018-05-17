@@ -309,7 +309,7 @@ namespace Xamarin.Forms.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		internal static void GatherXmlnsDefinitionAttributes()
+		static void GatherXmlnsDefinitionAttributes()
 		{
 			Assembly[] assemblies = null;
 #if !NETSTANDARD2_0
@@ -317,10 +317,8 @@ namespace Xamarin.Forms.Xaml
 				typeof(View).GetTypeInfo().Assembly,
 				typeof(XamlLoader).GetTypeInfo().Assembly,
 			};
-			Debug.WriteLine($"XamlParser.cs: NetStandard 1.x in use; reverting to standard assembly namespaces.");
 #else
-			assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			Debug.WriteLine($"XamlParser.cs: NetStandard 2.0 in use; searching for XmlnsDefinitionAttribute in asemblies {string.Join(", ", assemblies.Select(asm=>asm.FullName))}");
+			assemblies = AppDomain.CurrentDomain.GetAssemblies();			
 #endif
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -328,7 +326,7 @@ namespace Xamarin.Forms.Xaml
 				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute))) {
 					s_xmlnsDefinitions.Add(attribute);
 					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
-				}			
+				}
 		}
 
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
@@ -357,8 +355,7 @@ namespace Xamarin.Forms.Xaml
 			if (lookupAssemblies.Count == 0) {
 				string ns, asmstring, _;
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out ns, out asmstring, out _);
-				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
-				{
+				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
 					AssemblyName = asmstring ?? currentAssembly.FullName
 				});
 			}

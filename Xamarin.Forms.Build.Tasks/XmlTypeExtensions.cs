@@ -14,19 +14,6 @@ namespace Xamarin.Forms.Build.Tasks
 			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
 		static object _nsLock = new object();
 
-		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
-		{
-			var attr = new XmlnsDefinitionAttribute(
-							ca.ConstructorArguments[0].Value as string,
-							ca.ConstructorArguments[1].Value as string);
-
-			string assemblyName = null;
-			if (ca.Properties.Count > 0)
-				assemblyName = ca.Properties[0].Argument.Value as string;
-			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
-			return attr;
-		}
-
 		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -66,7 +53,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public static TypeReference GetTypeReference(string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
 			return new XmlType(namespaceURI, typename, null).GetTypeReference(module, xmlInfo);
-		}		
+		}
 
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
@@ -149,6 +136,19 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}. Ensure third party control libraries are referenced in the code of your project and not just in XAML.", elementName, namespaceURI), xmlInfo);
 
 			return module.ImportReference(type);
-		}	
+		}
+
+		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
+		{
+			var attr = new XmlnsDefinitionAttribute(
+							ca.ConstructorArguments[0].Value as string,
+							ca.ConstructorArguments[1].Value as string);
+
+			string assemblyName = null;
+			if (ca.Properties.Count > 0)
+				assemblyName = ca.Properties[0].Argument.Value as string;
+			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
+			return attr;
+		}
 	}
 }

@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 		}
 
-		static int generatedTypesCount;		
+		static int generatedTypesCount;
 		bool _nsAssembliesLoaded = false;
 		List<XmlnsDefinitionAttribute> _xmlnsDefinitions;
 		Dictionary<string, ModuleDefinition> _xmlnsModules;
@@ -98,6 +98,7 @@ namespace Xamarin.Forms.Build.Tasks
 					return false;
 
 			GenerateCode();
+			CleanupXmlnsAssemblyData();
 
 			return true;
 		}
@@ -315,67 +316,9 @@ namespace Xamarin.Forms.Build.Tasks
 			if (indexOfCompile != -1)
 				compileValue = parts[indexOfCompile + 1].Trim('"', '\'');
 			return compileValue.Equals("true", StringComparison.InvariantCultureIgnoreCase);
-		}
+		}		
 
-		public CodeTypeReference GetCustomNamespaceUrlType(XmlType xmlType)
-		{
-			if (_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
-
-			var namespaceURI = xmlType.NamespaceUri;
-			var elementName = xmlType.Name;
-			var typeArguments = xmlType.TypeArguments;		
-
-			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
-			var lookupNames = new List<string>();
-
-			foreach (var xmlnsDef in _xmlnsDefinitions)
-			{
-				if (xmlnsDef.XmlNamespace != namespaceURI)
-					continue;
-				lookupAssemblies.Add(xmlnsDef);
-			}
-
-			if (lookupAssemblies.Count == 0)
-				return null;
-
-			lookupNames.Add(elementName);
-			lookupNames.Add(elementName + "Extension");
-
-			for (var i = 0; i < lookupNames.Count; i++)
-			{
-				var name = lookupNames[i];
-				if (name.Contains(":"))
-					name = name.Substring(name.LastIndexOf(':') + 1);
-				if (typeArguments != null)
-					name += "`" + typeArguments.Count; //this will return an open generic Type
-				lookupNames[i] = name;
-			}
-
-			TypeReference typeReference = null;
-			foreach (var asm in lookupAssemblies)
-			{
-				ModuleDefinition module = null;
-				if (!_xmlnsModules.TryGetValue(asm.AssemblyName, out module))
-					continue;
-				foreach (var name in lookupNames) {
-					string fullName = $"{asm.ClrNamespace}.{name}";
-					typeReference = module.Types.Where(t => t.FullName == fullName).FirstOrDefault();
-					if (typeReference != null)
-						break;
-				}
-				if (typeReference != null)
-					break;
-			}
-
-			if (typeReference == null)
-				throw new Exception($"Type {elementName} not found in xmlns {namespaceURI}");
-
-			return new CodeTypeReference(typeReference.FullName);
-		}
-
-		public CodeTypeReference GetType(
-			XmlType xmlType,
+		CodeTypeReference GetType(XmlType xmlType,
 			Func<string, string> getNamespaceOfPrefix = null)
 		{
 			CodeTypeReference returnType = null;
@@ -433,7 +376,7 @@ namespace Xamarin.Forms.Build.Tasks
 		void GatherXmlnsDefinitionAttributes()
 		{
 			_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-			_xmlnsModules = new Dictionary<string, ModuleDefinition>();
+			_xmlnsModules = new Dictionary<string, ModuleDefinition>();			
 
 			if (string.IsNullOrEmpty(this.References)) {
 				_nsAssembliesLoaded = true;
@@ -471,6 +414,73 @@ namespace Xamarin.Forms.Build.Tasks
 				return true;
 			else
 				return false;
+		}
+
+		CodeTypeReference GetCustomNamespaceUrlType(XmlType xmlType)
+		{
+			if (_xmlnsDefinitions == null)
+				GatherXmlnsDefinitionAttributes();
+
+			var namespaceURI = xmlType.NamespaceUri;
+			var elementName = xmlType.Name;
+			var typeArguments = xmlType.TypeArguments;
+
+			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
+			var lookupNames = new List<string>();
+
+			foreach (var xmlnsDef in _xmlnsDefinitions)
+			{
+				if (xmlnsDef.XmlNamespace != namespaceURI)
+					continue;
+				lookupAssemblies.Add(xmlnsDef);
+			}
+
+			if (lookupAssemblies.Count == 0)
+				return null;
+
+			lookupNames.Add(elementName);
+			lookupNames.Add(elementName + "Extension");
+
+			for (var i = 0; i < lookupNames.Count; i++)
+			{
+				var name = lookupNames[i];
+				if (name.Contains(":"))
+					name = name.Substring(name.LastIndexOf(':') + 1);
+				if (typeArguments != null)
+					name += "`" + typeArguments.Count; //this will return an open generic Type
+				lookupNames[i] = name;
+			}
+
+			TypeReference typeReference = null;
+			foreach (var asm in lookupAssemblies)
+			{
+				ModuleDefinition module = null;
+				if (!_xmlnsModules.TryGetValue(asm.AssemblyName, out module))
+					continue;
+				foreach (var name in lookupNames)
+				{
+					string fullName = $"{asm.ClrNamespace}.{name}";
+					typeReference = module.Types.Where(t => t.FullName == fullName).FirstOrDefault();
+					if (typeReference != null)
+						break;
+				}
+				if (typeReference != null)
+					break;
+			}
+
+			if (typeReference == null)
+				throw new Exception($"Type {elementName} not found in xmlns {namespaceURI}");
+
+			return new CodeTypeReference(typeReference.FullName);
+		}
+
+		void CleanupXmlnsAssemblyData()
+		{			
+			if ( _xmlnsModules != null ) {
+				foreach (var moduleDef in _xmlnsModules.Values) {
+					moduleDef.Dispose();
+				}
+			}
 		}
 	}
 }
