@@ -4,12 +4,10 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using System.Reflection;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 using Mono.Cecil;
 
@@ -41,7 +39,6 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		static int generatedTypesCount;
-		bool _nsAssembliesLoaded = false;
 		List<XmlnsDefinitionAttribute> _xmlnsDefinitions;
 		Dictionary<string, ModuleDefinition> _xmlnsModules;
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
@@ -376,12 +373,10 @@ namespace Xamarin.Forms.Build.Tasks
 		void GatherXmlnsDefinitionAttributes()
 		{
 			_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-			_xmlnsModules = new Dictionary<string, ModuleDefinition>();			
+			_xmlnsModules = new Dictionary<string, ModuleDefinition>();
 
-			if (string.IsNullOrEmpty(this.References)) {
-				_nsAssembliesLoaded = true;
+			if (string.IsNullOrEmpty(this.References))
 				return;
-			}
 
 			string[] paths = this.References.Split(';');
 
@@ -400,8 +395,6 @@ namespace Xamarin.Forms.Build.Tasks
 					}					
 				}								
 			}
-						
-			_nsAssembliesLoaded = true;
 		}
 
 		bool AssemblyIsSystem(string name)
