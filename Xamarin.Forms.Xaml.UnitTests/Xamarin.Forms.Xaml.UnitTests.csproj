@@ -108,6 +108,9 @@
     <Compile Include="Issues\Bz41296.xaml.cs">
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\GH2691.xaml.cs">
+      <DependentUpon>GH2691.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LoaderTests.cs" />
     <Compile Include="PlatformSpecifics.xaml.cs">
       <DependentUpon>PlatformSpecifics.xaml</DependentUpon>
@@ -626,6 +629,10 @@
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
       <Project>{67F9D3A8-F71E-4428-913F-C37AE82CDB24}</Project>
       <Name>Xamarin.Forms.Platform</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute\Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute.csproj">
+      <Project>{96786e49-f8e6-4492-8b04-ae03232acc28}</Project>
+      <Name>Xamarin.Forms.Xaml.UnitTests.XmlnsDefinitionAttribute</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
       <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
@@ -1158,6 +1165,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="css\" />
+    <EmbeddedResource Include="Issues\GH2691.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
 

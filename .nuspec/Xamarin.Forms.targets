@@ -64,14 +64,16 @@
 		</CoreCompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames; AfterResolveReferences" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
 		<PropertyGroup>
 			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
+			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
 		</PropertyGroup>
 		<XamlGTask
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
 			AssemblyName = "$(AssemblyName)"
+			References = "$(ReferencedAssemblies)"
 			OutputPath = "$(IntermediateOutputPath)">
 			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
 			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
